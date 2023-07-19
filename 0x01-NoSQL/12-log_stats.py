@@ -3,22 +3,28 @@
 
 
 from pymongo import MongoClient
-import pprint
 
-client = MongoClient()
 
-collection = client.logs.nginx
-methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]
-counts = []
-total_logs = collection.count_documents({})
-get_logs = collection.count_documents({'method': 'GET', 'path': '/status'})
+def log_stats():
+    ''' Provides some stats about Nginx logs stored in MongoDB'''
+    client = MongoClient()
 
-for method in methods:
-    counts.append(collection.count_documents({'method': method}))
+    collection = client.logs.nginx
+    methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]
+    counts = []
+    total_logs = collection.count_documents({})
+    status = collection.count_documents({'method': 'GET', 'path': '/status'})
 
-print('{} logs'.format(total_logs))
-print('Methods:')
+    for method in methods:
+        counts.append(collection.count_documents({'method': method}))
 
-for method, count in zip(methods, counts):
-    print('\tmethod {}: {}'.format(method, count))
-print('{} status check'.format(get_logs))
+    print('{} logs'.format(total_logs))
+    print('Methods:')
+
+    for method, count in zip(methods, counts):
+        print('\tmethod {}: {}'.format(method, count))
+    print('{} status check'.format(status))
+
+
+if __name__ == '__main__':
+    log_stats()
