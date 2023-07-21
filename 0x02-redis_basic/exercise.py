@@ -45,7 +45,7 @@ class Cache:
         ''' Defines an instance of Redis client'''
         self._redis = redis.Redis(decode_responses=True)
         self._redis.flushdb()
-
+    @count_calls
     @call_history
     def store(self, data: Union[str, bytes, int, float]) -> str:
         ''' Generate random key store the input in Redis '''
@@ -69,3 +69,19 @@ class Cache:
     def get_int(self, key):
         ''' Converts a redis value to an int '''
         return int.from_bytes(self, sys.byteorder)
+
+   def replay(method: Callable):
+    """
+    Display the history of calls of a particular function.
+    """
+    r = redis.Redis()
+    key = method.__qualname__
+    count = r.get(key).decode('utf-8')
+    inputs = r.lrange(key + ":inputs", 0, -1)
+    outputs = r.lrange(key + ":outputs", 0, -1)
+
+    print("{} was called {} times:".format(key, count))
+
+    for input, output in zip(inputs, outputs):
+        print("{}(*{}) -> {}".format(key, input.decode('utf-8'),
+                                     output.decode('utf-8'))) 
