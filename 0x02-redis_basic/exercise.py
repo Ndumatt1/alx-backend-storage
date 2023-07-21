@@ -4,8 +4,21 @@
 import random
 import redis
 from typing import Union, Optional, Callable
+from functools import wraps
 import uuid
 import json
+
+
+def count_calls(method: Callable) -> Callable:
+    ''' Counts how many times methods of Cache class was called'''
+    key = method.__qualname__
+
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        ''' Wrap param self, args, return'''
+        self._redis.incr(key)
+        return method(self, *args, *kwargs)
+    return wrapper
 
 
 class Cache:
